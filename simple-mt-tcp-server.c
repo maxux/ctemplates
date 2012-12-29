@@ -119,6 +119,7 @@ void * working(void *thread) {
 	printf("[+] Thread (fd %d) closed\n", thread_data->sockfd);
 	
 	/* Clearing */
+	close(thread_data->sockfd);
 	free(thread);
 	
 	return 0;
