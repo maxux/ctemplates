@@ -111,7 +111,7 @@ void * working(void *thread) {
 	printf("[+] Thread (fd %d) created\n", thread_data->sockfd);
 	
 	/* Echo Service */
-	while((length = recv(thread_data->sockfd, buffer, sizeof(buffer), 0)) > 0) {
+	while((length = recv(thread_data->sockfd, buffer, sizeof(buffer) - 1, 0)) > 0) {
 		buffer[length] = '\0';
 		
 		if(send(thread_data->sockfd, buffer, strlen(buffer), 0) < 0)
