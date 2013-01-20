@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lib_list.h"
+#include "linkedlist.h"
 
 list_t * list_init(void (*destruct)(void *)) {
 	list_t *list;
