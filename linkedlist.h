@@ -22,4 +22,7 @@
 	
 	int list_remove(list_t *list, char *name);
 	void list_free(list_t *list);
+	
+	#define list_foreach(list, node) \
+	        for(list_node_t *node = list->nodes; node; node = node->next)
 #endif
