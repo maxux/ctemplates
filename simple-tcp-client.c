@@ -1,15 +1,15 @@
 /* Simple TCP client, for Linux.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -33,54 +33,66 @@ void diep(char *str) {
 	exit(EXIT_FAILURE);
 }
 
-int working(int sockfd);
+int errp(char *str) {
+    perror(str);
+    return -1;
+}
 
-int main(void) {
+int net_connect(char *host, int port) {
 	int sockfd;
 	struct sockaddr_in addr_remote;
 	struct hostent *hent;
 
-	/* Creating client socket */
-	addr_remote.sin_family      = AF_INET;
-	addr_remote.sin_port        = htons(CONNECT_PORT);
-	
+	/* creating client socket */
+	addr_remote.sin_family = AF_INET;
+	addr_remote.sin_port = htons(port);
+
 	/* dns resolution */
-	if((hent = gethostbyname(CONNECT_ADDR)) == NULL)
-		diep("[-] gethostbyname");
-		
+	if((hent = gethostbyname(host)) == NULL)
+		return errp("[-] gethostbyname");
+
 	memcpy(&addr_remote.sin_addr, hent->h_addr_list[0], hent->h_length);
-	
+
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		diep("[-] socket");
+		return errp("[-] socket");
 
 	/* connecting */
 	if(connect(sockfd, (const struct sockaddr *) &addr_remote, sizeof(addr_remote)) < 0)
-		diep("[-] connect");
+		return errp("[-] connect");
 
-	printf("[+] Connected\n");
-	working(sockfd);
-	
+	return sockfd;
+}
+
+int worker(int sockfd) {
+	char buffer[256];
+	int length;
+
+	/* http request example */
+	/* strcpy(buffer, "GET / HTTP/1.0\r\n\r\n"); */
+
+	strcpy(buffer, "Hello, world !\n");
+	if(send(sockfd, buffer, strlen(buffer), 0) < 0)
+		diep("[-] send");
+
+	printf("[+] message sent\n");
+
+	if((length = recv(sockfd, buffer, sizeof(buffer), 0)) < 0)
+		perror("[-] read");
+
+	buffer[length] = '\0';
+	printf("[+] buffer: %s\n", buffer);
+
 	return 0;
 }
 
-int working(int sockfd) {
-	char buffer[256];
-	int length;
-	
-	/* http request example */
-	/* strcpy(buffer, "GET / HTTP/1.0\r\n\r\n"); */
-	
-	strcpy(buffer, "Hello world !\n");
-	if(send(sockfd, buffer, strlen(buffer), 0) < 0)
-		diep("[-] send");
-	
-	printf("[+] Message sent\n");
-	
-	if((length = recv(sockfd, buffer, sizeof(buffer), 0)) < 0)
-		perror("[-] read");
-	
-	buffer[length] = '\0';
-	printf("[+] Buffer: %s\n", buffer);
-	
-	return 0;
+int main(void) {
+    int sockfd;
+
+    if((sockfd = net_connect(CONNECT_ADDR, CONNECT_PORT)) < 0)
+        return 1;
+
+    printf("[+] connected\n");
+    worker(sockfd);
+
+    return 0;
 }
