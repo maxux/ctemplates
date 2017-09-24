@@ -29,8 +29,8 @@
 #define CONNECT_ADDR    "localhost"
 
 void diep(char *str) {
-	perror(str);
-	exit(EXIT_FAILURE);
+    perror(str);
+    exit(EXIT_FAILURE);
 }
 
 int errp(char *str) {
@@ -39,50 +39,50 @@ int errp(char *str) {
 }
 
 int net_connect(char *host, int port) {
-	int sockfd;
-	struct sockaddr_in addr_remote;
-	struct hostent *hent;
+    int sockfd;
+    struct sockaddr_in addr_remote;
+    struct hostent *hent;
 
-	/* creating client socket */
-	addr_remote.sin_family = AF_INET;
-	addr_remote.sin_port = htons(port);
+    /* creating client socket */
+    addr_remote.sin_family = AF_INET;
+    addr_remote.sin_port = htons(port);
 
-	/* dns resolution */
-	if((hent = gethostbyname(host)) == NULL)
-		return errp("[-] gethostbyname");
+    /* dns resolution */
+    if((hent = gethostbyname(host)) == NULL)
+        return errp("[-] gethostbyname");
 
-	memcpy(&addr_remote.sin_addr, hent->h_addr_list[0], hent->h_length);
+    memcpy(&addr_remote.sin_addr, hent->h_addr_list[0], hent->h_length);
 
-	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		return errp("[-] socket");
+    if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        return errp("[-] socket");
 
-	/* connecting */
-	if(connect(sockfd, (const struct sockaddr *) &addr_remote, sizeof(addr_remote)) < 0)
-		return errp("[-] connect");
+    /* connecting */
+    if(connect(sockfd, (const struct sockaddr *) &addr_remote, sizeof(addr_remote)) < 0)
+        return errp("[-] connect");
 
-	return sockfd;
+    return sockfd;
 }
 
 int worker(int sockfd) {
-	char buffer[256];
-	int length;
+    char buffer[256];
+    int length;
 
-	/* http request example */
-	/* strcpy(buffer, "GET / HTTP/1.0\r\n\r\n"); */
+    /* http request example */
+    /* strcpy(buffer, "GET / HTTP/1.0\r\n\r\n"); */
 
-	strcpy(buffer, "Hello, world !\n");
-	if(send(sockfd, buffer, strlen(buffer), 0) < 0)
-		diep("[-] send");
+    strcpy(buffer, "Hello, world !\n");
+    if(send(sockfd, buffer, strlen(buffer), 0) < 0)
+        diep("[-] send");
 
-	printf("[+] message sent\n");
+    printf("[+] message sent\n");
 
-	if((length = recv(sockfd, buffer, sizeof(buffer), 0)) < 0)
-		perror("[-] read");
+    if((length = recv(sockfd, buffer, sizeof(buffer), 0)) < 0)
+        perror("[-] read");
 
-	buffer[length] = '\0';
-	printf("[+] buffer: %s\n", buffer);
+    buffer[length] = '\0';
+    printf("[+] buffer: %s\n", buffer);
 
-	return 0;
+    return 0;
 }
 
 int main(void) {
